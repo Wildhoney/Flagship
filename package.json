@@ -11,7 +11,7 @@
     "html": "htmlmin -o public/index.html src/index.html",
     "sass": "node-sass src/css/default.scss public/css/default.css",
     "prebuild": "rimraf public && mkdir public && mkdir public/js && mkdir public/css",
-    "build": "pulp browserify --optimise > public/js/flagship.js && npm run html",
+    "build": "pulp browserify --optimise > public/js/flagship.js && npm run html && npm run sass",
     "watch": "pulp --watch browserify --to public/js/flagship.js",
     "postbuild": "ncp src/images public/images && ncp src/server public/server",
     "start": "npm run build && echo \"Started server on port 3000...\" && babel-node public/server/default.js"
