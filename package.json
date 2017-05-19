@@ -30,5 +30,8 @@
   "bugs": {
     "url": "https://github.com/Wildhoney/Flagship/issues"
   },
-  "homepage": "https://github.com/Wildhoney/Flagship#readme"
+  "homepage": "https://github.com/Wildhoney/Flagship#readme",
+  "devDependencies": {
+    "bower": "~1.8.0"
+  }
 }
