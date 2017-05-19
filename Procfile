@@ -1,1 +1,1 @@
-web: babel-node public/server/default.js
+web: npm run start

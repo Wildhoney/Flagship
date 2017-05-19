@@ -10,7 +10,7 @@
     "test": "ava",
     "html": "htmlmin -o public/index.html src/index.html",
     "prebuild": "rimraf public && mkdir public && mkdir public/js",
-    "build": "pulp build --optimise > public/js/flagship.js && npm run html",
+    "build": "pulp browserify --optimise > public/js/flagship.js && npm run html",
     "watch": "pulp --watch browserify --to public/js/flagship.js",
     "postbuild": "ncp src/images public/images && ncp src/server public/server",
     "start": "npm run build && echo \"Started server on port 3000...\" && babel-node public/server/default.js"
