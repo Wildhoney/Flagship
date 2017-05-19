@@ -7,7 +7,9 @@
     "test": "test"
   },
   "scripts": {
-    "test": "ava"
+    "test": "ava",
+    "prebuild": "mkdir public && mkdir public/js",
+    "build": "pulp build --optimise > public/js/flagship.js"
   },
   "repository": {
     "type": "git",
@@ -32,6 +34,8 @@
   },
   "homepage": "https://github.com/Wildhoney/Flagship#readme",
   "devDependencies": {
-    "bower": "~1.8.0"
+    "bower": "~1.8.0",
+    "pulp": "~11.0.0",
+    "purs-loader": "~3.0.0"
   }
 }
