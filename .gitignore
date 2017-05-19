@@ -1,3 +1,22 @@
+# os
+.DS_Store
+
+# ide
+.idea
+
+# npm
+node_modules
+npm-debug.log
+yarn.lock
+
+# public
+public
+
+# coverage
+coverage
+.nyc_output
+
+# ps
 /bower_components/
 /node_modules/
 /.pulp-cache/
