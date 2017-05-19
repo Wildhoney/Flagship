@@ -11,8 +11,9 @@
     "html": "htmlmin -o public/index.html src/index.html",
     "prebuild": "rimraf public && mkdir public && mkdir public/js",
     "build": "pulp build --optimise > public/js/flagship.js && npm run html",
+    "watch": "pulp --watch build --to public/js/flagship.js",
     "postbuild": "ncp src/images public/images && ncp src/server public/server",
-    "start": "babel-node public/server/default.js"
+    "start": "npm run build && echo \"Started server on port 3000...\" && babel-node public/server/default.js"
   },
   "repository": {
     "type": "git",
