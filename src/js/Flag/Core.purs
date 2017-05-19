@@ -3,7 +3,7 @@ module Flag.Core (Event, view, foldp, init) where
 import Prelude
 import Data.Maybe (Maybe(..))
 import Data.Array (length)
-import Pux (EffModel)
+import Pux (EffModel, noEffects)
 import Pux.DOM.HTML (HTML)
 import Pux.DOM.Events (onClick)
 import Text.Smolder.HTML (h1, img, button)
@@ -20,9 +20,9 @@ init ∷ State
 init = { name: "Japan", countries: [] }
 
 foldp ∷ ∀ fx. Event → State → EffModel State Event fx
-foldp (Country x)           s = { state: { name: x, countries: s.countries }, effects: [] }
-foldp (ReceiveCountries xs) s = { state: { name: s.name, countries: xs }, effects: [] }
-foldp (RequestCountries)    s = { state: { name: s.name, countries: [] }, effects: [do
+foldp (Country x)           st = noEffects $ st { name = x }
+foldp (ReceiveCountries xs) st = noEffects $ st { countries = xs }
+foldp (RequestCountries)    st = { state: st, effects: [do
   pure $ Just $ ReceiveCountries ["Russia", "Japan", "Thailand"]
 ]}
 
