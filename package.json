@@ -11,7 +11,7 @@
     "html": "htmlmin -o public/index.html src/index.html",
     "prebuild": "rimraf public && mkdir public && mkdir public/js",
     "build": "pulp build --optimise > public/js/flagship.js && npm run html",
-    "watch": "pulp --watch build --to public/js/flagship.js",
+    "watch": "pulp --watch browserify --to public/js/flagship.js",
     "postbuild": "ncp src/images public/images && ncp src/server public/server",
     "start": "npm run build && echo \"Started server on port 3000...\" && babel-node public/server/default.js"
   },
@@ -47,5 +47,9 @@
     "pulp": "~11.0.0",
     "purs-loader": "~3.0.0",
     "rimraf": "~2.6.1"
+  },
+  "dependencies": {
+    "react": "~15.4.2",
+    "react-dom": "~15.4.2"
   }
 }
