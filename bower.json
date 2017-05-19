@@ -9,7 +9,8 @@
   "dependencies": {
     "purescript-prelude": "^3.0.0",
     "purescript-console": "^3.0.0",
-    "purescript-pux": "^9.1.0"
+    "purescript-pux": "^9.1.0",
+    "purescript-maybe": "^3.0.0"
   },
   "devDependencies": {
     "purescript-psci-support": "^3.0.0"
