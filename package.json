@@ -9,7 +9,8 @@
   "scripts": {
     "test": "ava",
     "html": "htmlmin -o public/index.html src/index.html",
-    "prebuild": "rimraf public && mkdir public && mkdir public/js",
+    "sass": "node-sass src/css/default.scss public/css/default.css",
+    "prebuild": "rimraf public && mkdir public && mkdir public/js && mkdir public/css",
     "build": "pulp browserify --optimise > public/js/flagship.js && npm run html",
     "watch": "pulp --watch browserify --to public/js/flagship.js",
     "postbuild": "ncp src/images public/images && ncp src/server public/server",
@@ -44,6 +45,7 @@
     "express": "~4.15.2",
     "htmlmin": "0.0.7",
     "ncp": "~2.0.0",
+    "node-sass": "~4.5.1",
     "pulp": "~11.0.0",
     "purs-loader": "~3.0.0",
     "rimraf": "~2.6.1"

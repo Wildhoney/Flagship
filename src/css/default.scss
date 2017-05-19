@@ -1,0 +1,23 @@
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: rgba(0, 0, 0, .015);
+  font-family: Lato, Arial, Tahoma, Helvetica, sans-serif;
+}
+
+img {
+  width: 300px;
+}
+
+section.app {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
