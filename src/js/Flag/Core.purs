@@ -1,25 +1,29 @@
-module Flag.Core (Event, view, foldp, initialState) where
+module Flag.Core (Event, view, foldp, init) where
 
-import Prelude hiding (div)
+import Prelude
 import Pux (EffModel)
 import Pux.DOM.HTML (HTML)
-import Text.Smolder.HTML (h1, div, img)
-import Text.Smolder.Markup (text, (!))
+import Pux.DOM.Events (onClick)
+import Text.Smolder.HTML (h1, img, button)
+import Text.Smolder.Markup (text, (!), (#!))
 import Text.Smolder.HTML.Attributes (src, alt)
 
-type Country = String
+type Name = String
 type State = { name ∷ Country }
-data Event = Present Country
+data Event = Country Name
 
-initialState ∷ State
-initialState = { name: "Argentina" }
+init ∷ State
+init = { name: "Japan" }
 
 foldp ∷ ∀ fx. Event → State → EffModel State Event fx
-foldp (Present name) n = { state: { name: name }, effects: [] }
+foldp (Country name) n = { state: { name: name }, effects: [] }
 
 view ∷ State → HTML Event
 view state =
   do
-    h1 $ text "Flagship"
-    img ! src ("images/flags/" <> state.name <> ".svg") ! alt "Flag"
-    div $ text state.name
+    h1 $ text "Which country has this flag?"
+    img ! src flag ! alt "Flag"
+    button #! onClick (const $ Country "Russia") $ text state.name
+      where
+        flag ∷ String
+        flag = ("images/flags/" <> state.name <> ".svg")

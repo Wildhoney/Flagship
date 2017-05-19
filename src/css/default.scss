@@ -13,11 +13,21 @@ img {
   width: 300px;
 }
 
-section.app {
+section.app > div {
   display: flex;
+  flex-direction: column;
   width: 100vw;
   height: 100vh;
   justify-content: center;
   align-items: center;
   text-align: center;
+
+  > button {
+    padding: 10px 15px;
+    border: 0;
+    cursor: pointer;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, .075), rgba(0, 0, 0, .15));
+    border-radius: 3px;
+    outline: none;
+  }
 }
