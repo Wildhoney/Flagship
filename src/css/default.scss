@@ -5,7 +5,6 @@
 }
 
 body {
-  background-color: rgba(0, 0, 0, .015);
   font-family: Lato, Arial, Tahoma, Helvetica, sans-serif;
 }
 
@@ -13,21 +12,59 @@ img {
   width: 300px;
 }
 
-section.app > div {
-  display: flex;
-  flex-direction: column;
+section.app > div.flagship {
+  $header-height: 35px;
+
   width: 100vw;
   height: 100vh;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
 
-  > button {
-    padding: 10px 15px;
-    border: 0;
-    cursor: pointer;
-    background: linear-gradient(to bottom, rgba(0, 0, 0, .075), rgba(0, 0, 0, .15));
-    border-radius: 3px;
-    outline: none;
+  > ul.header {
+    height: $header-height;
+    border-bottom: 1px solid rgba(0, 0, 0, .1);
+    display: flex;
+    flex-direction: row;
+    list-style-type: none;
+    font-size: 12px;
+
+    > li {
+      padding: 0 10px;
+      display: flex;
+      align-items: center;
+      border-right: 1px solid rgba(0, 0, 0, .1);
+
+      > h1 {
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+      }
+
+      > button {
+        color: #f44336;
+        border: 0;
+        background-color: transparent;
+        font-weight: 400;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: color 0.25s;
+        outline: none;
+
+        &:hover {
+          color: black;
+        }
+      }
+    }
+  }
+
+  > div.prompt {
+    width: 100%;
+    height: calc(100% - #{$header-height});
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+
+    > img {
+      width: 200px;
+    }
   }
 }
