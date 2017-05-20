@@ -1,12 +1,12 @@
 module Flag.Core (Event, view, foldp, init) where
 
-import Prelude
+import Prelude hiding (div)
 import Data.Maybe (Maybe(..))
-import Data.Array (length)
+import Data.Array (uncons, length)
 import Pux (EffModel, noEffects)
 import Pux.DOM.HTML (HTML)
 import Pux.DOM.Events (onClick)
-import Text.Smolder.HTML (h1, img, button)
+import Text.Smolder.HTML (h1, img, button, div)
 import Text.Smolder.Markup (text, (!), (#!))
 import Text.Smolder.HTML.Attributes (src, alt)
 
@@ -27,11 +27,11 @@ foldp (RequestCountries)    st = { state: st, effects: [do
 ]}
 
 view ∷ State → HTML Event
-view state =
-  do
+view state = case uncons state.countries of
+  Nothing          -> div $ button #! onClick (const RequestCountries) $ text "Start"
+  Just { head: _ } -> do
     h1 $ text ("Which country has this flag?" <> (show $ length state.countries))
     img ! src flag ! alt "Flag"
     button #! onClick (const $ Country "Russia") $ text state.name
-    button #! onClick (const RequestCountries) $ text "Start"
       where
         flag = ("images/flags/" <> state.name <> ".svg")
