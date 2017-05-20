@@ -3,10 +3,11 @@ module Flag.Core (Event, view, foldp, init) where
 import Prelude hiding (div)
 import Data.Maybe (Maybe(..))
 import Data.Array (uncons, length)
+import Data.Foldable (for_)
 import Pux (EffModel, noEffects)
 import Pux.DOM.HTML (HTML)
 import Pux.DOM.Events (onClick)
-import Text.Smolder.HTML (h1, img, button, header, ul, li, div)
+import Text.Smolder.HTML (h1, img, button, ul, li, div)
 import Text.Smolder.Markup (text, (!), (#!))
 import Text.Smolder.HTML.Attributes (src, alt, className, disabled)
 
@@ -29,7 +30,7 @@ foldp (RequestCountries)    st = { state: st, effects: [do
 view ∷ State → HTML Event
 view state = div ! className "flagship" $ case uncons state.countries of
   Nothing -> toolbar state
-  Just _  -> toolbar state <> prompt state
+  Just _  -> toolbar state <> flag state
 
 toolbar ∷ State → HTML Event
 toolbar state = ul ! className "header" $ do
@@ -38,9 +39,13 @@ toolbar state = ul ! className "header" $ do
     where
       isDisabled = if (length state.countries == 0) then "" else "disabled"
 
-prompt ∷ State → HTML Event
-prompt state = div ! className "prompt" $ do
+flag ∷ State → HTML Event
+flag state = div ! className "prompt" $ do
   img ! src path ! alt "Flag"
-  button #! onClick (const $ Country "Russia") $ text state.name
+  ul ! className "countries" $ for_ state.countries choice
     where
       path = ("images/flags/" <> state.name <> ".svg")
+
+choice ∷ Name → HTML Event
+choice name =
+  li $ button #! onClick (const $ Country name) $ text name

@@ -27,7 +27,6 @@ section.app > div.flagship {
     font-size: 12px;
 
     > li {
-      padding: 0 10px;
       display: flex;
       align-items: center;
       border-right: 1px solid rgba(0, 0, 0, .1);
@@ -36,24 +35,28 @@ section.app > div.flagship {
         font-size: 12px;
         font-weight: 700;
         text-transform: uppercase;
+        padding: 0 10px;
       }
 
       > button {
         color: #f44336;
         border: 0;
+        padding: 0 10px;
         background-color: transparent;
         font-weight: 400;
         text-transform: uppercase;
         cursor: pointer;
         transition: color 0.25s;
         outline: none;
+        height: 100%;
+        width: 100%;
 
         &:disabled {
           color: rgba(0, 0, 0, .25);
           cursor: not-allowed;
         }
 
-        &:not(:disabled)hover {
+        &:not(:disabled):hover {
           color: black;
         }
       }
@@ -70,6 +73,40 @@ section.app > div.flagship {
 
     > img {
       width: 200px;
+    }
+
+    > ul.countries {
+      display: flex;
+      flex-direction: row;
+      list-style-type: none;
+      border: 1px solid rgba(0, 0, 0, .1);
+
+      > li {
+        border-right: 1px solid rgba(0, 0, 0, .1);
+        height: 25px;
+        display: flex;
+        align-items: center;
+
+        &:last-of-type {
+          border-right: 0;
+        }
+
+        > button {
+          padding: 0 10px;
+          background-color: transparent;
+          font-weight: 400;
+          cursor: pointer;
+          transition: color 0.25s;
+          border: 0;
+          outline: none;
+          height: 100%;
+          width: 100%;
+
+          &:hover {
+            color: #f44336;
+          }
+        }
+      }
     }
   }
 }
