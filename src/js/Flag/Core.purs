@@ -28,8 +28,8 @@ foldp (RequestCountries)    st = { state: st, effects: [do
 
 view ∷ State → HTML Event
 view state = case uncons state.countries of
-  Nothing          -> div $ button #! onClick (const RequestCountries) $ text "Start"
-  Just { head: _ } -> do
+  Nothing -> div $ button #! onClick (const RequestCountries) $ text "Start"
+  Just _  -> do
     h1 $ text ("Which country has this flag?" <> (show $ length state.countries))
     img ! src flag ! alt "Flag"
     button #! onClick (const $ Country "Russia") $ text state.name
