@@ -40,7 +40,7 @@ toolbar state = ul ! className "header" $ do
 
 prompt ∷ State → HTML Event
 prompt state = div ! className "prompt" $ do
-  img ! src flag ! alt "Flag"
+  img ! src path ! alt "Flag"
   button #! onClick (const $ Country "Russia") $ text state.name
     where
-      flag = ("images/flags/" <> state.name <> ".svg")
+      path = ("images/flags/" <> state.name <> ".svg")
