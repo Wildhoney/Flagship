@@ -1,6 +1,6 @@
 module Main where
 
-import Prelude hiding (div)
+import Prelude
 import Control.Monad.Eff (Eff)
 import Pux (CoreEffects, start)
 import Pux.Renderer.React (renderToDOM)
