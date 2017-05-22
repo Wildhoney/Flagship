@@ -2,7 +2,7 @@ module Flag.Core (Event, view, foldp, init) where
 
 import Prelude hiding (div)
 import Data.Maybe (Maybe(..))
-import Data.Array (uncons, length, replicate, zip, sortBy)
+import Data.Array (uncons, length, replicate, zip, sortBy, drop, head)
 import Control.Monad.Eff.Exception (Error)
 import Data.Either (Either(..))
 import Control.Monad.Eff.Random (RANDOM, random)
@@ -20,27 +20,27 @@ import Text.Smolder.HTML.Attributes (src, alt, className, disabled)
 type Name = String
 type Countries = Array Name
 
-type State = { name ∷ Name, countries ∷ Countries, correct ∷ Int, incorrect ∷ Int }
-data Event = Answer Name | RequestCountries | ReceiveCountries (Either Error Countries)
+type State = { countries ∷ Countries, correct ∷ Int, incorrect ∷ Int }
+data Event = Answer Name Name | RequestCountries | ReceiveCountries (Either Error Countries)
 
 init ∷ State
-init = { name: "", countries: [], correct: 0, incorrect: 0 }
+init = { countries: [], correct: 0, incorrect: 0 }
 
 foldp ∷ Event → State → EffModel State Event (random ∷ RANDOM)
-foldp (Answer x) st
-  | st.name == x = noEffects $ st { name = x, correct = st.correct + 1 }
-  | st.name /= x = noEffects $ st { name = x, incorrect = st.incorrect + 1 }
-  | otherwise    = noEffects $ st { name = x }
+foldp (Answer a b) st
+  | a == b    = noEffects $ st { countries = drop 1 st.countries, correct = st.correct + 1 }
+  | a /= b    = noEffects $ st { countries = drop 1 st.countries, incorrect = st.incorrect + 1 }
+  | otherwise = noEffects $ st { countries = drop 1 st.countries }
 foldp (ReceiveCountries (Left err)) st = noEffects $ st { countries = [] }
-foldp (ReceiveCountries (Right xs)) st = noEffects $ st { name = "Russia", countries = xs }
+foldp (ReceiveCountries (Right xs)) st = noEffects $ st { countries = xs }
 foldp (RequestCountries)            st = { state: st, effects: [do
-  xs <- liftEff' $ map fst <$> sortBy compareSnd <$> zip countries <$> (sequence $ replicate (length countries) random)
+  xs <- liftEff' $ map fst <$> sortBy compareSnd <$> pairs
   pure $ Just $ ReceiveCountries xs
 ]}
   where
+    pairs = zip countries <$> (sequence $ replicate (length countries) random)
     compareSnd (Tuple _ a) (Tuple _ b) = compare a b
     countries = ["Russia", "Japan", "Thailand"]
-
 
 view ∷ State → HTML Event
 view state = div ! className "flagship" $ case uncons state.countries of
@@ -59,11 +59,11 @@ toolbar state = ul ! className "header" $ do
 
 flag ∷ State → HTML Event
 flag state = div ! className "prompt" $ do
-  img ! src path ! alt "Flag"
-  ul ! className "countries" $ for_ state.countries choice
-    where
-      path = ("images/flags/" <> state.name <> ".svg")
+  case head state.countries of
+    Just name -> do
+      img ! src ("images/flags/" <> name <> ".svg") ! alt "Flag"
+      ul ! className "countries" $ for_ state.countries $ choice name
+    Nothing   -> div $ text "All done!"
 
-choice ∷ Name → HTML Event
-choice name =
-  li $ button #! onClick (const $ Answer name) $ text name
+choice ∷ Name → Name → HTML Event
+choice answer name = li $ button #! onClick (const $ Answer answer name) $ text name
