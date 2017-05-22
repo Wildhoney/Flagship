@@ -31,6 +31,18 @@ section.app > div.flagship {
       align-items: center;
       border-right: 1px solid rgba(0, 0, 0, .1);
 
+      &.score {
+        padding: 0 10px;
+
+        &.correct {
+          color: green;
+        }
+
+        &.incorrect {
+          color: red;
+        }
+      }
+
       > h1 {
         font-size: 12px;
         font-weight: 700;
@@ -39,7 +51,7 @@ section.app > div.flagship {
       }
 
       > button {
-        color: #f44336;
+        color: #0080ff;
         border: 0;
         padding: 0 10px;
         background-color: transparent;
