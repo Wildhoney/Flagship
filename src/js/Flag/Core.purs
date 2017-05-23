@@ -18,10 +18,10 @@ import Text.Smolder.Markup (text, (!), (#!))
 import Text.Smolder.HTML.Attributes (src, alt, className, disabled)
 
 type Name = String
-type Countries = Array Name
-type CorrectAnswer = Name
-
+type Countries = Array Country
 type State = { countries ∷ Countries, correct ∷ Int, incorrect ∷ Int }
+type Country = { name :: Name, flag :: String }
+
 data Event = Answer Name | RequestCountries | ReceiveCountries (Either Error Countries)
 
 init ∷ State
@@ -29,8 +29,8 @@ init = { countries: [], correct: 0, incorrect: 0 }
 
 foldp ∷ Event → State → EffModel State Event (random ∷ RANDOM)
 foldp (Answer name) st = noEffects $ case head st.countries of
-  Nothing      -> st { countries = [], correct = 0, incorrect = 0 }
-  Just correct -> if name == correct then isCorrect else isIncorrect
+  Nothing    -> st { countries = [], correct = 0, incorrect = 0 }
+  Just model -> if name == model.name then isCorrect else isIncorrect
     where
       countries   = drop 1 st.countries
       isCorrect   = st { countries = countries, correct = st.correct + 1 }
@@ -44,7 +44,11 @@ foldp (RequestCountries)            st = { state: st, effects: [do
   where
     pairs = zip countries <$> (sequence $ replicate (length countries) random)
     compareSnd (Tuple _ a) (Tuple _ b) = compare a b
-    countries = ["Russia", "Japan", "Thailand"]
+    countries = [
+      { name: "Russia", flag: "russia.svg" },
+      { name: "Japan", flag: "japan.svg" },
+      { name: "Thailand", flag: "thailand.svg" }
+    ]
 
 view ∷ State → HTML Event
 view state = div ! className "flagship" $ case uncons state.countries of
@@ -64,10 +68,10 @@ toolbar state = ul ! className "header" $ do
 flag ∷ State → HTML Event
 flag state = div ! className "prompt" $ do
   case head state.countries of
-    Just name -> do
-      img ! src ("images/flags/" <> name <> ".svg") ! alt "Flag"
+    Just model -> do
+      img ! src ("images/flags/" <> model.flag) ! alt "Flag"
       ul ! className "countries" $ for_ state.countries $ choice
     Nothing   -> div $ text "All done!"
 
-choice ∷ Name → HTML Event
-choice name = li $ button #! onClick (const $ Answer name) $ text name
+choice ∷ Country → HTML Event
+choice model = li $ button #! onClick (const $ Answer model.name) $ text model.name
