@@ -1,4 +1,4 @@
-module Flag.Core (Event, view, foldp, init) where
+module Flag.Core (Event, Country, view, foldp, init) where
 
 import Prelude hiding (div)
 import Data.Maybe (Maybe(..))
@@ -20,17 +20,17 @@ import Text.Smolder.HTML.Attributes (src, alt, className, disabled)
 type Name = String
 type Countries = Array Country
 type State = { countries ∷ Countries, correct ∷ Int, incorrect ∷ Int }
-type Country = { name :: Name, flag :: String }
 
 data Event = Answer Name | RequestCountries | ReceiveCountries (Either Error Countries)
+newtype Country = Country { name :: Name, flag :: String }
 
 init ∷ State
 init = { countries: [], correct: 0, incorrect: 0 }
 
 foldp ∷ Event → State → EffModel State Event (random ∷ RANDOM)
 foldp (Answer name) st = noEffects $ case head st.countries of
-  Nothing    -> st { countries = [], correct = 0, incorrect = 0 }
-  Just model -> if name == model.name then isCorrect else isIncorrect
+  Nothing              -> st { countries = [], correct = 0, incorrect = 0 }
+  Just (Country model) -> if name == model.name then isCorrect else isIncorrect
     where
       countries   = drop 1 st.countries
       isCorrect   = st { countries = countries, correct = st.correct + 1 }
@@ -45,9 +45,9 @@ foldp (RequestCountries)            st = { state: st, effects: [do
     pairs = zip countries <$> (sequence $ replicate (length countries) random)
     compareSnd (Tuple _ a) (Tuple _ b) = compare a b
     countries = [
-      { name: "Russia", flag: "russia.svg" },
-      { name: "Japan", flag: "japan.svg" },
-      { name: "Thailand", flag: "thailand.svg" }
+      Country { name: "Russia", flag: "russia.svg" },
+      Country { name: "Japan", flag: "japan.svg" },
+      Country { name: "Thailand", flag: "thailand.svg" }
     ]
 
 view ∷ State → HTML Event
@@ -68,10 +68,11 @@ toolbar state = ul ! className "header" $ do
 flag ∷ State → HTML Event
 flag state = div ! className "prompt" $ do
   case head state.countries of
-    Just model -> do
+    Nothing              -> div $ text "All done!"
+    Just (Country model) -> do
       img ! src ("images/flags/" <> model.flag) ! alt "Flag"
-      ul ! className "countries" $ for_ state.countries $ choice
-    Nothing   -> div $ text "All done!"
+      ul ! className "countries" $ for_ state.countries $ country
 
-choice ∷ Country → HTML Event
-choice model = li $ button #! onClick (const $ Answer model.name) $ text model.name
+country ∷ Country → HTML Event
+country (Country model) =
+  li $ button #! onClick (const $ Answer model.name) $ text model.name
