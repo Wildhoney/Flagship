@@ -12,7 +12,9 @@
     "purescript-pux": "^9.1.0",
     "purescript-maybe": "^3.0.0",
     "purescript-random": "^3.0.0",
-    "purescript-tuples": "^4.0.0"
+    "purescript-tuples": "^4.0.0",
+    "purescript-affjax": "^4.0.0",
+    "purescript-argonaut": "^3.0.0"
   },
   "devDependencies": {
     "purescript-psci-support": "^3.0.0"
