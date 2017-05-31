@@ -1,29 +1,30 @@
-module Flag.Core (Event, Country, view, foldp, init) where
+module Flag.Core (Event, Country(..), Name, view, foldp, init) where
 
-import Prelude hiding (div)
-import Data.Maybe (Maybe(..))
+import Control.Monad.Aff (attempt, liftEff')
+import Control.Monad.Eff.Exception (Error)
+import Control.Monad.Eff.Random (RANDOM, random)
+import Data.Argonaut (class DecodeJson, decodeJson, (.?))
 import Data.Array (uncons, length, replicate, zip, sortBy, drop, head, take)
 import Data.Either (Either(..), either)
-import Data.Tuple (Tuple(..), fst)
-import Data.Traversable (sequence)
-import Control.Monad.Eff.Exception (Error)
+import Data.EuclideanRing ((-))
 import Data.Foldable (for_)
-import Data.Argonaut (class DecodeJson, decodeJson, (.?))
-import Control.Monad.Aff (attempt, liftEff')
-import Control.Monad.Eff.Random (RANDOM, random)
+import Data.Maybe (Maybe(..))
+import Data.Traversable (sequence)
+import Data.Tuple (Tuple(..), fst)
 import Network.HTTP.Affjax (AJAX, get)
 import Pux (EffModel, noEffects)
-import Pux.DOM.HTML (HTML)
 import Pux.DOM.Events (onClick)
+import Pux.DOM.HTML (HTML)
 import Text.Smolder.HTML (h1, img, button, ul, li, div)
-import Text.Smolder.Markup (text, (!), (#!))
 import Text.Smolder.HTML.Attributes (src, alt, className, disabled)
+import Text.Smolder.Markup (text, (!), (#!))
+import Prelude hiding (div)
 
 type Name = String
 type Countries = Array Country
 type State = { countries ∷ Countries, correct ∷ Int, incorrect ∷ Int }
 
-data Event = Answer Name | RequestCountries | ReceiveCountries (Either String Countries)
+data Event = Answer Name | Request | Receive (Either String Countries)
 newtype Country = Country { name :: Name, flag :: String }
 
 instance decodeJson ∷ DecodeJson Country where
@@ -37,26 +38,19 @@ init ∷ State
 init = { countries: [], correct: 0, incorrect: 0 }
 
 foldp ∷ Event → State → EffModel State Event (random ∷ RANDOM, ajax ∷ AJAX)
-foldp (Answer name) st = noEffects $ case head st.countries of
-  Nothing              -> st { countries = [], correct = 0, incorrect = 0 }
-  Just (Country model) -> if name == model.name then isCorrect else isIncorrect
-    where
-      countries   = drop 1 st.countries
-      isCorrect   = st { countries = countries, correct = st.correct + 1 }
-      isIncorrect = st { countries = countries, incorrect = st.incorrect + 1 }
-foldp (ReceiveCountries (Left err)) st = noEffects $ st { countries = [] }
-foldp (ReceiveCountries (Right xs)) st = noEffects $ st { countries = xs }
-foldp (RequestCountries)            st = { state: st, effects: [do
+foldp (Answer name)        state = noEffects $ case ((_ == name) <<< \(Country model) -> model.name) <$> head state.countries of
+  (Just true)  -> state { countries = drop 1 state.countries, correct = state.correct + 1 }
+  (Just false) -> state { countries = drop 1 state.countries, incorrect = state.incorrect + 1 }
+  Nothing      -> state { countries = [], correct = 0, incorrect = 0 }
+foldp (Receive (Left err)) state = noEffects $ state { countries = [] }
+foldp (Receive (Right xs)) state = noEffects $ state { countries = xs }
+foldp (Request)            state = { state: state, effects: [do
   response <- attempt $ get "/countries.json"
   let countries = either (Left <<< show) decode response
-  pure $ Just $ ReceiveCountries countries
+  pure $ Just $ Receive countries
 ]}
   where
     decode transfer = decodeJson transfer.response :: Either String Countries
-    -- compareSnd (Tuple _ a) (Tuple _ b) = compare a b
-    -- sort (Left err)        = Left <<< show $ err
-    -- sort (Right countries) = Right $ liftEff' $ map (Country <<< fst) <$> sortBy compareSnd <$>
-    --                                  zip countries <$> (sequence $ replicate (length countries) random)
 
 view ∷ State → HTML Event
 view state = div ! className "flagship" $ case uncons state.countries of
@@ -66,7 +60,7 @@ view state = div ! className "flagship" $ case uncons state.countries of
 toolbar ∷ State → HTML Event
 toolbar state = ul ! className "header" $ do
   li $ h1 $ text "Flagship"
-  li $ button ! disabled isDisabled #! onClick (const RequestCountries) $ text "Start"
+  li $ button ! disabled isDisabled #! onClick (const Request) $ text "Start"
   li ! className "score correct" $ text $ show state.correct
   li ! className "score incorrect" $ text $ show state.incorrect
   li ! className "score" $ text $ show $ state.correct + state.incorrect
