@@ -1,4 +1,4 @@
-module Flag.Core (fetch, shuffle, view, foldp, init) where
+module Flag.Core (view, foldp, init) where
 
 import Control.Monad.Aff (Aff, attempt)
 import Control.Monad.Eff (Eff)
