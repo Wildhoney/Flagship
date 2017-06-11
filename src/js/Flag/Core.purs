@@ -1,13 +1,13 @@
 module Flag.Core (fetch, shuffle, view, foldp, init) where
 
-import Control.Monad.Aff (Aff)
+import Control.Monad.Aff (Aff, liftEff')
 import Control.Monad.Eff (Eff)
 import Control.Monad.Eff.Random (RANDOM, random)
 import Data.Argonaut (decodeJson, Json)
 import Data.Array (length, replicate, sortBy, zip, head, take, uncons)
 import Data.Either (Either(..))
 import Data.Foldable (for_)
-import Data.Maybe (Maybe(..))
+import Data.Maybe (Maybe(..), maybe)
 import Data.Traversable (sequence)
 import Data.Tuple (Tuple(..), snd)
 import Flag.Types (Countries, Country(..), Event(..), State)
@@ -33,10 +33,9 @@ decode ∷ ∀ r. { response ∷ Json | r } → Either String (Array Country)
 decode request = decodeJson request.response :: Either String Countries
 
 fetch ∷ ∀ e. Aff (random ∷ RANDOM, ajax ∷ AJAX | e) (Maybe Countries)
-fetch = do
-  get "/countries.json" >>= \xs → case decode xs of
-    Left _          → pure $ Nothing
-    Right countries → pure $ Just countries
+fetch = get "/countries.json" >>= \xs → case decode xs of
+          Left _          → pure $ Nothing
+          Right countries → pure $ Just countries
 
 foldp ∷ Event → State → EffModel State Event (random ∷ RANDOM, ajax ∷ AJAX)
 foldp (Request)           state = onlyEffects state [Just <<< Receive <$> fetch]
