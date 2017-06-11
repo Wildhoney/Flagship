@@ -4,6 +4,29 @@
   box-sizing: border-box;
 }
 
+@mixin button {
+  color: #0080ff;
+  border: 0;
+  padding: 0 10px;
+  background-color: transparent;
+  font-weight: 400;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color 0.25s;
+  outline: none;
+  height: 100%;
+  width: 100%;
+
+  &:disabled {
+    color: rgba(0, 0, 0, .25);
+    cursor: not-allowed;
+  }
+
+  &:not(:disabled):hover {
+    color: black;
+  }
+}
+
 body {
   font-family: Lato, Arial, Tahoma, Helvetica, sans-serif;
 }
@@ -51,26 +74,7 @@ section.app > div.flagship {
       }
 
       > button {
-        color: #0080ff;
-        border: 0;
-        padding: 0 10px;
-        background-color: transparent;
-        font-weight: 400;
-        text-transform: uppercase;
-        cursor: pointer;
-        transition: color 0.25s;
-        outline: none;
-        height: 100%;
-        width: 100%;
-
-        &:disabled {
-          color: rgba(0, 0, 0, .25);
-          cursor: not-allowed;
-        }
-
-        &:not(:disabled):hover {
-          color: black;
-        }
+        @include button;
       }
     }
   }
@@ -82,6 +86,13 @@ section.app > div.flagship {
     align-items: center;
     justify-content: center;
     flex-direction: column;
+
+    > button {
+      @include button;
+      width: 100px;
+      height: 40px;
+      border: 1px solid rgba(0, 0, 0, .1);
+    }
 
     > img {
       width: 200px;

@@ -1,6 +1,6 @@
 module Flag.Core (fetch, shuffle, view, foldp, init) where
 
-import Control.Monad.Aff (Aff, liftEff')
+import Control.Monad.Aff (Aff)
 import Control.Monad.Eff (Eff)
 import Control.Monad.Eff.Class (liftEff)
 import Control.Monad.Eff.Random (RANDOM, random)
@@ -14,6 +14,7 @@ import Data.Tuple (Tuple(..), snd)
 import Flag.Types (Countries, Country(..), Event(..), State)
 import Network.HTTP.Affjax (AJAX, get)
 import Pux (EffModel, noEffects, onlyEffects)
+import Pux.DOM.HTML.Attributes (key)
 import Pux.DOM.Events (onClick)
 import Pux.DOM.HTML (HTML)
 import Text.Smolder.HTML (h1, button, ul, li, div, img)
@@ -52,17 +53,17 @@ foldp (Respond name)      state = noEffects $ case join $ uncons <$> state.count
 
 view ∷ State → HTML Event
 view state = div ! className "flagship" $ do
-  ul ! className "header" $ do
-    li $ h1 $ text "Flagship"
-    li $ button #! onClick (const Request) $ text "Start"
-    li ! className "score correct" $ text $ show state.correct
-    li ! className "score incorrect" $ text $ show state.incorrect
-    li ! className "score" $ text $ show $ state.correct + state.incorrect
-  <> do div ! className "prompt" $ case state.countries of
+  ul ! key "header" ! className "header" $ do
+    li ! key "title" $ h1 $ text "Flagship"
+    li ! key "button" $ button #! onClick (const Request) $ text "Start"
+    li ! key "correct" ! className "score correct" $ text $ show state.correct
+    li ! key "incorrect" ! className "score incorrect" $ text $ show state.incorrect
+    li ! key "score" ! className "score" $ text $ show $ state.correct + state.incorrect
+  <> do div ! key "prompt" ! className "prompt" $ case state.countries of
           Nothing        → button #! onClick (const Request) $ text "Start"
           Just countries → case head countries of
             Nothing              → div $ text "All done!"
             Just (Country current) → do
-              img ! src ("images/flags/" <> current.flag) ! alt "Flag"
-              ul ! className "countries" $ for_ (take 4 countries) $ \(Country answer) →
-                li $ button #! onClick (const $ Respond answer.name) $ text answer.name
+              img ! key "flag" ! src ("images/flags/" <> current.flag) ! alt "Flag"
+              ul ! key "countries" ! className "countries" $ for_ (take 4 countries) $ \(Country answer) →
+                li ! key answer.name $ button #! onClick (const $ Respond answer.name) $ text answer.name
