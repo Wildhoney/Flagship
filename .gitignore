@@ -3,6 +3,7 @@
 
 # ide
 .idea
+.history
 
 # npm
 node_modules
