@@ -1,15 +1,13 @@
 module Flag.App (Event, Country(..), init, foldp, view) where
 
-import CSS.Transform (offset)
-import DOM.HTML.Window (RequestAnimationFrameId)
 import Data.Array (length)
 import Data.Maybe (Maybe(..))
 import Data.Newtype (class Newtype)
 import Network.HTTP.Affjax (AJAX)
-import Pux (EffModel, noEffects, onlyEffects)
+import Pux (EffModel, noEffects)
 import Pux.DOM.Events (onClick)
 import Pux.DOM.HTML (HTML)
-import Text.Smolder.HTML (button, div, header, nav, section, a)
+import Text.Smolder.HTML (div, header, nav, section, a)
 import Text.Smolder.HTML.Attributes (className)
 import Text.Smolder.Markup (text, (!), (#!))
 import Prelude hiding (div)
