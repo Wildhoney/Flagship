@@ -7,15 +7,15 @@ import Network.HTTP.Affjax (AJAX)
 import Pux (EffModel, noEffects)
 import Pux.DOM.Events (onClick)
 import Pux.DOM.HTML (HTML)
-import Text.Smolder.HTML (div, header, nav, section, a)
-import Text.Smolder.HTML.Attributes (className)
+import Text.Smolder.HTML (div, header, nav, section, a, img, ul, li)
+import Text.Smolder.HTML.Attributes (className, src)
 import Text.Smolder.Markup (text, (!), (#!))
 import Prelude hiding (div)
 
 type State = { countries :: Countries, correct :: Int, incorrect :: Int }
 type Countries = Array Country
 
-data Event = RequestCountries | ReceiveCountries Countries
+data Event = RequestCountries | ReceiveCountries Countries | GuessCountry String
 
 newtype Country = Country { name :: String, flag :: String }
 derive instance newtypeCountry :: Newtype Country _
@@ -26,6 +26,7 @@ init :: State
 init = { countries: [], correct: 0, incorrect: 0 }
 
 foldp :: Event -> State -> EffModel State Event (ajax :: AJAX)
+foldp (GuessCountry name) state = noEffects state { correct = state.correct + 1 }
 foldp (ReceiveCountries xs) state = noEffects state { countries = xs }
 foldp (RequestCountries) state = { state: state { correct = 0, incorrect = 0 }, effects: [ do
   pure $ Just (ReceiveCountries [Country { name: "Russia", flag: "russia.svg" }]) 
@@ -42,4 +43,9 @@ view state = do
       0 -> "Start"
       _ -> "Restart"
   section do
-    div $ text "..."
+    img ! src "/images/flags/indonesia.svg"
+    ul do
+      li #! onClick (const $ GuessCountry "Ecuador") $ text "Ecuador"
+      li #! onClick (const $ GuessCountry "Slovenia") $ text "Slovenia"
+      li #! onClick (const $ GuessCountry "Aruba")$ text "Aruba"
+      li #! onClick (const $ GuessCountry "Indonesia")$ text "Indonesia"

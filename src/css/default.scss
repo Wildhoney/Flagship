@@ -5,8 +5,13 @@
 }
 
 section.app {
+  $border: 1px solid rgba(0, 0, 0, 0.1);
+  $link-default: black;
+  $link-hover: #ff5511;
+
   width: 100vw;
   height: 100vh;
+  user-select: none;
   font-family: Lato, Arial, Tahoma, Helvetica, sans-serif;
 
   > div {
@@ -20,7 +25,7 @@ section.app {
       display: flex;
       align-items: center;
       width: 100%;
-      border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+      border-bottom: $border;
       font-size: 12px;
       height: $size;
 
@@ -32,10 +37,10 @@ section.app {
       > a {
         cursor: pointer;
         transition: color 0.25s;
-        color: cornflowerblue;
+        color: $link-default;
 
         &:hover {
-          color: black;
+          color: $link-hover;
         }
       }
 
@@ -46,7 +51,7 @@ section.app {
         display: flex;
         align-items: center;
         height: 100%;
-        border-right: 1px solid rgba(0, 0, 0, 0.1);
+        border-right: $border;
 
         &.correct {
           color: green;
@@ -61,8 +66,42 @@ section.app {
     > section {
       height: 100%;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
+
+      > img {
+        width: 50vw;
+        max-width: 300px;
+      }
+
+      > ul {
+        $size: 35px;
+
+        height: $size;
+        border: $border;
+        display: flex;
+
+        > li {
+          list-style-type: none;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 0 ($size / 2.5);
+          font-size: 13px;
+          color: $link-default;
+          transition: color 0.25s;
+          cursor: pointer;
+
+          &:hover {
+            color: $link-hover;
+          }
+
+          &:not(:last-of-type) {
+            border-right: $border;
+          }
+        }
+      }
     }
   }
 }
