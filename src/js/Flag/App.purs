@@ -7,7 +7,7 @@ import Data.Either (Either(..))
 import Data.Maybe (Maybe(..), maybe)
 import Data.Newtype (class Newtype, unwrap)
 import Data.Traversable (for_)
-import Data.Int (fromNumber)
+import Data.Int (fromNumber, round)
 import Data.Tuple (Tuple(..))
 import Network.HTTP.Affjax (AJAX, get)
 import Pux (EffModel, noEffects)
@@ -66,7 +66,7 @@ foldp (RequestCountries) state = {
   effects: [Just <<< ReceiveCountries <$> fetch]
 }
 
-view :: State → HTML Event
+view :: State -> HTML Event
 view state = do
   nav do
     header $ text "Flagship"
@@ -82,10 +82,11 @@ view state = do
       ul $ for_ state.current $ \name -> li #! onClick (const $ ReceiveAnswer name) $ text name
     Nothing, 0.0 -> div $ text "..."
     Nothing, _   -> do
-      div ! className "percentage" $ text $ (show percentage) <> "%"
-      div ! className "score" $ text $ "You scored " <> (show correct) <> " out of " <> (show total) <> "!"
-      a #! onClick (const RequestCountries) $ text "Restart"
+      section ! className "results" $ do
+        div ! className "percentage" $ text $ (show percentage) <> "%"
+        div ! className "score" $ text $ "You scored " <> (show correct) <> " out of " <> (show total) <> "."
+        a #! onClick (const RequestCountries) $ text "Play Again"
       where total = maybe 0 id <<< fromNumber $ (state.correct + state.incorrect)
             correct = maybe 0 id <<< fromNumber $ state.correct
             incorrect = maybe 0 id <<< fromNumber $ state.incorrect
-            percentage = maybe 0 id <<< fromNumber $ (state.correct / (state.correct + state.incorrect)) * 100.0
+            percentage = round $ (state.correct / (state.correct + state.incorrect)) * 100.0

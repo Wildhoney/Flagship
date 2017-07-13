@@ -86,6 +86,14 @@ section.app {
         border: $border;
         display: flex;
 
+        @media screen and (max-width: 480px) {
+          flex-direction: column;
+          border: 0;
+          height: auto;
+          width: 50vw;
+          max-width: 300px;
+        }
+
         > li {
           list-style-type: none;
           display: flex;
@@ -103,6 +111,47 @@ section.app {
 
           &:not(:last-of-type) {
             border-right: $border;
+          }
+
+          @media screen and (max-width: 480px) {
+            border: $border;
+            padding: ($size / $padding-factor);
+
+            &:not(:last-of-type) {
+              border-bottom: 0;
+            }
+          }
+        }
+      }
+
+      > section.results {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+
+        > div {
+
+          &.score {
+            margin: 10px 0 20px 0;
+            font-size: 12px;
+          }
+
+          &.percentage {
+            font-size: 65px;
+            font-weight: bold;
+          }
+        }
+
+        > a {
+          color: $link-default;
+          transition: color 0.25s;
+          cursor: pointer;
+          border: $border;
+          padding: 8px 25px;
+          font-size: 12px;
+
+          &:hover {
+            color: $link-hover;
           }
         }
       }
