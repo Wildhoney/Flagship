@@ -18,9 +18,6 @@ import Text.Smolder.HTML.Attributes (className, src)
 import Text.Smolder.Markup (text, (!), (#!))
 import Prelude hiding (div)
 
-answers :: Int
-answers = 4
-
 type State = { all :: Countries, current :: Array String, correct :: Number, incorrect :: Number }
 type Countries = Array Country
 data Event = RequestCountries | ReceiveCountries (Tuple Countries (Array String)) | ReceiveAnswer String | ReceiveAnswers (Array String)
@@ -38,6 +35,9 @@ instance decodeJsonCountry :: DecodeJson Country where
     flag <- obj .? "flag"
     pure $ Country { name, flag }
 
+answerCount :: Int
+answerCount = 4
+
 init :: State
 init = { all: [], current: [], correct: 0.0, incorrect: 0.0 }
 
@@ -50,7 +50,7 @@ fetch = get "/countries.json" >>= \xs -> case decode xs of
   Right countries -> pure $ Tuple countries (randomise countries)
 
 randomise :: Countries -> Array String
-randomise xs = take answers $ _.name <<< unwrap <$> xs
+randomise xs = take answerCount $ _.name <<< unwrap <$> xs
 
 foldp :: Event -> State -> EffModel State Event (ajax :: AJAX)
 foldp (ReceiveAnswer name) state = {
@@ -80,7 +80,7 @@ view state = do
     Just { head }, _ -> do
       img ! (src <<< ("/images/flags/" <> _) <<< _.flag <<< unwrap $ head)
       ul $ for_ state.current $ \name -> li #! onClick (const $ ReceiveAnswer name) $ text name
-    Nothing, 0.0 -> div $ text "..."
+    Nothing, 0.0 -> div $ text ""
     Nothing, _   -> do
       section ! className "results" $ do
         div ! className "percentage" $ text $ (show percentage) <> "%"
