@@ -1,8 +1,11 @@
 module Flag.App (Event, Country(..), init, foldp, view) where
 
-import Data.Array (length)
+import CSS.Transform (offset)
+import Data.Array (length, uncons)
 import Data.Maybe (Maybe(..))
-import Data.Newtype (class Newtype)
+import Data.Newtype (class Newtype, unwrap)
+import Data.Traversable (for_)
+import Data.Tuple (Tuple(..))
 import Network.HTTP.Affjax (AJAX)
 import Pux (EffModel, noEffects)
 import Pux.DOM.Events (onClick)
@@ -10,9 +13,7 @@ import Pux.DOM.HTML (HTML)
 import Text.Smolder.HTML (div, header, nav, section, a, img, ul, li)
 import Text.Smolder.HTML.Attributes (className, src)
 import Text.Smolder.Markup (text, (!), (#!))
-import Data.Tuple (Tuple(..))
 import Prelude hiding (div)
-import Data.Traversable (for_)
 
 type State = { all :: Countries, current :: Array String, correct :: Int, incorrect :: Int }
 type Countries = Array Country
@@ -32,7 +33,7 @@ foldp (GuessCountry name) state = noEffects state { correct = state.correct + 1 
 foldp (ReceiveCountries (Tuple all current)) state = noEffects state { all = all, current = current }
 foldp (RequestCountries) state = { state: state { correct = 0, incorrect = 0 }, effects: [ do
   pure $ Just(ReceiveCountries $ Tuple
-    [Country { name: "Russia", flag: "russia.svg" }]
+    [Country { name: "Ecuador", flag: "ecuador.svg" }]
     ["Ecuador", "Slovenia", "Aruba", "Indonesia"]
   ) 
 ] }
@@ -47,6 +48,8 @@ view state = do
     a #! onClick (const RequestCountries) $ text $ case (length state.all) of
       0 -> "Start"
       _ -> "Restart"
-  section do
-    img ! src "/images/flags/indonesia.svg"
-    ul $ for_ state.current $ \name -> li #! onClick (const $ GuessCountry name) $ text name
+  section $ case (uncons state.all) of
+    Just { head } -> do
+      img ! (src <<< ("/images/flags/" <> _) <<< _.flag <<< unwrap $ head)
+      ul $ for_ state.current $ \name -> li #! onClick (const $ GuessCountry name) $ text name
+    Nothing       -> div $ text "..."
