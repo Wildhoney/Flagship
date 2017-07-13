@@ -1,8 +1,7 @@
 module Flag.App (Event, Country(..), init, foldp, view) where
 
-import CSS.Transform (offset)
-import Data.Array (length, uncons)
-import Data.Maybe (Maybe(..))
+import Data.Array (length, uncons, head)
+import Data.Maybe (Maybe(..), maybe)
 import Data.Newtype (class Newtype, unwrap)
 import Data.Traversable (for_)
 import Data.Tuple (Tuple(..))
@@ -29,14 +28,19 @@ init :: State
 init = { all: [], current: [], correct: 0, incorrect: 0 }
 
 foldp :: Event -> State -> EffModel State Event (ajax :: AJAX)
-foldp (GuessCountry name) state = noEffects state { correct = state.correct + 1 }
+foldp (GuessCountry name) state = case (_ == name) <<< maybe "" (_.name <<< unwrap) $ head state.all of
+  true -> noEffects state { correct = state.correct + 1 }
+  _    -> noEffects state { incorrect = state.incorrect + 1 }
 foldp (ReceiveCountries (Tuple all current)) state = noEffects state { all = all, current = current }
-foldp (RequestCountries) state = { state: state { correct = 0, incorrect = 0 }, effects: [ do
-  pure $ Just(ReceiveCountries $ Tuple
-    [Country { name: "Ecuador", flag: "ecuador.svg" }]
-    ["Ecuador", "Slovenia", "Aruba", "Indonesia"]
-  ) 
-] }
+foldp (RequestCountries) state = {
+  state: state { correct = 0, incorrect = 0 },
+  effects: [ do
+    pure $ Just(ReceiveCountries $ Tuple
+      [Country { name: "Ecuador", flag: "ecuador.svg" }]
+      ["Ecuador", "Slovenia", "Aruba", "Indonesia"]
+    )
+  ]
+}
 
 view :: State → HTML Event
 view state = do
