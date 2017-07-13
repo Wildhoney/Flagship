@@ -1,6 +1,6 @@
 module Flag.App (Event, Country(..), init, foldp, view) where
 
-import Data.Array (length, uncons, head, take)
+import Data.Array (length, uncons, head, take, drop)
 import Data.Maybe (Maybe(..), maybe)
 import Data.Newtype (class Newtype, unwrap)
 import Data.Traversable (for_)
@@ -49,9 +49,9 @@ fetch = get "/countries.json" >>= \xs -> case decode xs of
   Right countries -> pure $ Tuple countries (take answers $ _.name <<< unwrap <$> countries)
 
 foldp :: Event -> State -> EffModel State Event (ajax :: AJAX)
-foldp (GuessCountry name) state = case (_ == name) <<< maybe "" (_.name <<< unwrap) $ head state.all of
-  true -> noEffects state { correct = state.correct + 1 }
-  _    -> noEffects state { incorrect = state.incorrect + 1 }
+foldp (GuessCountry name) state = noEffects $ case (_ == name) <<< maybe "" (_.name <<< unwrap) $ head state.all of
+  true -> state { all = drop 1 state.all, correct = state.correct + 1 }
+  _    -> state { all = drop 1 state.all, incorrect = state.incorrect + 1 }
 foldp (ReceiveCountries (Tuple all current)) state = noEffects state { all = all, current = current }
 foldp (RequestCountries) state = {
   state: state { correct = 0, incorrect = 0 },
