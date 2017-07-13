@@ -31,7 +31,7 @@ foldp :: Event -> State -> EffModel State Event (ajax :: AJAX)
 foldp (GuessCountry name) state = case (_ == name) <<< maybe "" (_.name <<< unwrap) $ head state.all of
   true -> noEffects state { correct = state.correct + 1 }
   _    -> noEffects state { incorrect = state.incorrect + 1 }
-foldp (ReceiveCountries (Tuple all current)) state = noEffects state { all, current }
+foldp (ReceiveCountries (Tuple all current)) state = noEffects state { all = all, current = current }
 foldp (RequestCountries) state = {
   state: state { correct = 0, incorrect = 0 },
   effects: [ do
