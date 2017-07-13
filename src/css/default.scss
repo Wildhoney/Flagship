@@ -6,6 +6,7 @@
 
 section.app {
   $border: 1px solid rgba(0, 0, 0, 0.1);
+  $padding-factor: 2.5;
   $link-default: black;
   $link-hover: #ff5511;
 
@@ -29,25 +30,10 @@ section.app {
       font-size: 12px;
       height: $size;
 
-      > header {
-        font-weight: bold;
-        text-transform: uppercase;
-      }
-
-      > a {
-        cursor: pointer;
-        transition: color 0.25s;
-        color: $link-default;
-
-        &:hover {
-          color: $link-hover;
-        }
-      }
-
       > a,
       > header,
       > div {
-        padding: 0 ($size / 2.5);
+        padding: 0 ($size / $padding-factor);
         display: flex;
         align-items: center;
         height: 100%;
@@ -59,6 +45,24 @@ section.app {
 
         &.incorrect {
           color: red;
+        }
+      }
+
+      > header {
+        font-weight: bold;
+        text-transform: uppercase;
+        background: url('/images/flag.svg') no-repeat ($size / $padding-factor) center;
+        background-size: $size / $padding-factor;
+        padding-left: $size;
+      }
+
+      > a {
+        cursor: pointer;
+        transition: color 0.25s;
+        color: $link-default;
+
+        &:hover {
+          color: $link-hover;
         }
       }
     }
@@ -87,7 +91,7 @@ section.app {
           display: flex;
           align-items: center;
           justify-content: center;
-          padding: 0 ($size / 2.5);
+          padding: 0 ($size / $padding-factor);
           font-size: 13px;
           color: $link-default;
           transition: color 0.25s;
