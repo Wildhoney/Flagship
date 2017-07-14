@@ -1,14 +1,17 @@
-module Flag.App (Event, Country(..), init, foldp, view) where
+module Flag.App (Event, Country(..), shuffle, init, foldp, view) where
 
 import Control.Monad.Aff (Aff)
+import Control.Monad.Eff (Eff)
+import Control.Monad.Eff.Random (RANDOM, random)
+import Control.Monad.Eff.Class (liftEff)
 import Data.Argonaut (class DecodeJson, decodeJson, Json, (.?))
-import Data.Array (length, uncons, head, take, drop)
-import Data.Either (Either(..))
+import Data.Array (drop, head, length, replicate, sortBy, take, uncons, zip)
+import Data.Either (Either(..), either)
+import Data.Int (fromNumber, round)
 import Data.Maybe (Maybe(..), maybe)
 import Data.Newtype (class Newtype, unwrap)
-import Data.Traversable (for_)
-import Data.Int (fromNumber, round)
-import Data.Tuple (Tuple(..))
+import Data.Traversable (for_, sequence)
+import Data.Tuple (Tuple(..), snd)
 import Network.HTTP.Affjax (AJAX, get)
 import Pux (EffModel, noEffects)
 import Pux.DOM.Events (onClick)
@@ -20,7 +23,12 @@ import Prelude hiding (div)
 
 type State = { all :: Countries, current :: Array String, correct :: Number, incorrect :: Number }
 type Countries = Array Country
-data Event = RequestCountries | ReceiveCountries (Tuple Countries (Array String)) | ReceiveAnswer String | ReceiveAnswers (Array String)
+
+data Event = RequestCountries |
+             ReceiveCountries (Tuple Countries (Array String)) |
+             ReceiveAnswer String |
+             ReceiveAnswers (Array String)
+
 newtype Country = Country { name :: String, flag :: String }
 
 derive instance newtypeCountry :: Newtype Country _
@@ -30,9 +38,9 @@ instance showCountry :: Show Country where
 
 instance decodeJsonCountry :: DecodeJson Country where
   decodeJson json = do
-    obj <- decodeJson json
-    name <- obj .? "name"
-    flag <- obj .? "flag"
+    model <- decodeJson json
+    name <- model .? "name"
+    flag <- model .? "flag"
     pure $ Country { name, flag }
 
 answerCount :: Int
@@ -41,23 +49,30 @@ answerCount = 4
 init :: State
 init = { all: [], current: [], correct: 0.0, incorrect: 0.0 }
 
-decode ∷ ∀ r. { response :: Json | r } → Either String (Array Country)
+decode :: ∀ r. { response :: Json | r } -> Either String (Array Country)
 decode request = decodeJson request.response :: Either String Countries
 
-fetch :: forall e. Aff (ajax :: AJAX | e) (Tuple Countries (Array String))
-fetch = get "/countries.json" >>= \xs -> case decode xs of
-  Left _          -> pure $ Tuple [] []
-  Right countries -> pure $ Tuple countries (randomise countries)
+fetch :: forall e. Aff (ajax :: AJAX, random :: RANDOM | e) (Tuple Countries (Array String))
+fetch = get "/countries.json"
+  >>= pure <<< decode
+  >>= liftEff <<< shuffle <<< either (const []) id
+  >>= \countries -> pure <<< (\answers -> Tuple countries answers) <=< liftEff <<< pick $ countries
 
-randomise :: Countries -> Array String
-randomise xs = take answerCount $ _.name <<< unwrap <$> xs
+shuffle :: forall e a. Array a -> Eff (random :: RANDOM | e) (Array a)
+shuffle xs = do
+  randoms <- sequence $ replicate (length xs) random
+  pure $ map snd $ sortBy compareFst $ zip randoms xs
+  where compareFst (Tuple a _) (Tuple b _) = compare a b
 
-foldp :: Event -> State -> EffModel State Event (ajax :: AJAX)
+pick :: forall e. Countries -> Eff (random :: RANDOM | e) (Array String)
+pick xs = shuffle <<< take answerCount $ _.name <<< unwrap <$> xs
+
+foldp :: Event -> State -> EffModel State Event (ajax :: AJAX, random :: RANDOM)
 foldp (ReceiveAnswer name) state = {
   state: case (_ == name) <<< maybe "" (_.name <<< unwrap) $ head state.all of
            true -> state { all = drop 1 state.all, correct = state.correct + 1.0 }
            _    -> state { all = drop 1 state.all, incorrect = state.incorrect + 1.0 },
-  effects: [ pure <<< Just <<< ReceiveAnswers $ randomise <<< drop 1 $ state.all ]
+  effects: [pure <<< Just <<< ReceiveAnswers <=< liftEff <<< pick <<< drop 1 $ state.all]
 }
 foldp (ReceiveAnswers current) state = noEffects state { current = current }
 foldp (ReceiveCountries (Tuple all current)) state = noEffects state { all = all, current = current }
