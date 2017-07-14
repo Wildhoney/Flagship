@@ -23,11 +23,9 @@ import Prelude hiding (div)
 
 type State = { all :: Countries, current :: Array String, correct :: Number, incorrect :: Number }
 type Countries = Array Country
+type Names = Array String
 
-data Event = RequestCountries |
-             ReceiveCountries (Tuple Countries (Array String)) |
-             ReceiveAnswer String |
-             ReceiveAnswers (Array String)
+data Event = RequestCountries | ReceiveCountries (Tuple Countries Names) | ReceiveAnswer String | ReceiveAnswers Names
 
 newtype Country = Country { name :: String, flag :: String }
 
