@@ -6,7 +6,7 @@ import Control.Monad.Eff.Random (RANDOM, random)
 import Control.Monad.Eff.Class (liftEff)
 import Data.Argonaut (class DecodeJson, decodeJson, Json, (.?))
 import Data.Array (drop, head, length, replicate, sortBy, take, uncons, zip)
-import Data.Either (Either(..), either)
+import Data.Either (Either, either)
 import Data.Int (fromNumber, round)
 import Data.Maybe (Maybe(..), maybe)
 import Data.Newtype (class Newtype, unwrap)
@@ -56,7 +56,7 @@ fetch :: forall e. Aff (ajax :: AJAX, random :: RANDOM | e) (Tuple Countries (Ar
 fetch = get "/countries.json"
   >>= pure <<< decode
   >>= liftEff <<< shuffle <<< either (const []) id
-  >>= \countries -> pure <<< (\answers -> Tuple countries answers) <=< liftEff <<< pick $ countries
+  >>= \countries -> pure <<< Tuple countries <=< liftEff <<< pick $ countries
 
 shuffle :: forall e a. Array a -> Eff (random :: RANDOM | e) (Array a)
 shuffle xs = do
@@ -65,7 +65,8 @@ shuffle xs = do
   where compareFst (Tuple a _) (Tuple b _) = compare a b
 
 pick :: forall e. Countries -> Eff (random :: RANDOM | e) (Array String)
-pick xs = shuffle <<< take answerCount $ _.name <<< unwrap <$> xs
+pick xs = pure <=< shuffle <<< (next <> _) <<< take (answerCount - 1) <=< shuffle $ _.name <<< unwrap <$> xs
+  where next = _.name <<< unwrap <$> take 1 xs
 
 foldp :: Event -> State -> EffModel State Event (ajax :: AJAX, random :: RANDOM)
 foldp (ReceiveAnswer name) state = {
