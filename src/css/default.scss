@@ -77,6 +77,9 @@ section.app {
       > img {
         width: 50vw;
         max-width: 300px;
+        object-fit: cover;
+        max-height: 200px;
+        margin-bottom: 20px;
       }
 
       > ul {
@@ -115,7 +118,7 @@ section.app {
 
           @media screen and (max-width: 480px) {
             border: $border;
-            padding: ($size / $padding-factor);
+            padding: ($size / $padding-factor) - 5;
 
             &:not(:last-of-type) {
               border-bottom: 0;
