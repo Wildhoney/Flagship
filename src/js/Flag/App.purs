@@ -2,13 +2,14 @@ module Flag.App (Event, Country(..), shuffle, init, foldp, view) where
 
 import Control.Monad.Aff (Aff)
 import Control.Monad.Eff (Eff)
-import Control.Monad.Eff.Random (RANDOM, random)
 import Control.Monad.Eff.Class (liftEff)
+import Control.Monad.Eff.Random (RANDOM, random)
 import Data.Argonaut (class DecodeJson, decodeJson, Json, (.?))
 import Data.Array (drop, head, length, replicate, sortBy, take, uncons, zip)
 import Data.Either (Either, either)
 import Data.Int (fromNumber, round)
 import Data.Maybe (Maybe(..), maybe)
+import Data.Monoid (mempty)
 import Data.Newtype (class Newtype, unwrap)
 import Data.Traversable (for_, sequence)
 import Data.Tuple (Tuple(..), snd)
@@ -68,7 +69,7 @@ pick xs = pure <=< shuffle <<< (next <> _) <<< take (answerCount - 1) <=< shuffl
 
 foldp :: Event -> State -> EffModel State Event (ajax :: AJAX, random :: RANDOM)
 foldp (ReceiveAnswer name) state = {
-  state: case (_ == name) <<< maybe "" (_.name <<< unwrap) $ head state.all of
+  state: case (_ == name) <<< maybe mempty (_.name <<< unwrap) $ head state.all of
            true -> state { all = drop 1 state.all, correct = state.correct + 1.0 }
            _    -> state { all = drop 1 state.all, incorrect = state.incorrect + 1.0 },
   effects: [pure <<< Just <<< ReceiveAnswers <=< liftEff <<< pick <<< drop 1 $ state.all]
@@ -94,7 +95,7 @@ view state = do
     Just { head }, _ -> do
       img ! (src <<< ("/images/flags/" <> _) <<< _.flag <<< unwrap $ head)
       ul $ for_ state.current $ \name -> li #! onClick (const $ ReceiveAnswer name) $ text name
-    Nothing, 0.0 -> div $ text ""
+    Nothing, 0.0 -> div $ text mempty
     Nothing, _   -> do
       section ! className "results" $ do
         div ! className "percentage" $ text $ (show percentage) <> "%"
