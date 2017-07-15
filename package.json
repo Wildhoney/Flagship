@@ -1,6 +1,6 @@
 {
   "name": "flagship-app",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "Become a renowned vexillologist by honing your flag-based skills with Flagship.",
   "main": "public/index.html",
   "directories": {
