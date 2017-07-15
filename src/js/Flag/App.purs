@@ -7,7 +7,7 @@ import Control.Monad.Eff.Random (RANDOM, random)
 import Data.Argonaut (class DecodeJson, decodeJson, Json, (.?))
 import Data.Array (drop, head, length, replicate, sortBy, take, uncons, zip)
 import Data.Either (Either, either)
-import Data.Int (fromNumber, round)
+import Data.Int (round, toNumber)
 import Data.Maybe (Maybe(..), maybe)
 import Data.Monoid (mempty)
 import Data.Newtype (class Newtype, unwrap)
@@ -22,7 +22,7 @@ import Text.Smolder.HTML.Attributes (className, src)
 import Text.Smolder.Markup (text, (!), (#!))
 import Prelude hiding (div)
 
-type State = { all :: Countries, current :: Names, correct :: Number, incorrect :: Number }
+type State = { all :: Countries, current :: Names, correct :: Int, incorrect :: Int }
 type Countries = Array Country
 type Names = Array String
 
@@ -46,7 +46,7 @@ answerCount :: Int
 answerCount = 4
 
 init :: State
-init = { all: [], current: [], correct: 0.0, incorrect: 0.0 }
+init = { all: [], current: [], correct: 0, incorrect: 0 }
 
 decode :: forall r. { response :: Json | r } -> Either String (Array Country)
 decode request = decodeJson request.response :: Either String Countries
@@ -70,14 +70,14 @@ pick xs = pure <=< shuffle <<< (next <> _) <<< take (answerCount - 1) <=< shuffl
 foldp :: Event -> State -> EffModel State Event (ajax :: AJAX, random :: RANDOM)
 foldp (ReceiveAnswer name) state = {
   state: case (_ == name) <<< maybe mempty (_.name <<< unwrap) $ head state.all of
-           true -> state { all = drop 1 state.all, correct = state.correct + 1.0 }
-           _    -> state { all = drop 1 state.all, incorrect = state.incorrect + 1.0 },
+           true -> state { all = drop 1 state.all, correct = state.correct + 1 }
+           _    -> state { all = drop 1 state.all, incorrect = state.incorrect + 1 },
   effects: [pure <<< Just <<< ReceiveAnswers <=< liftEff <<< pick <<< drop 1 $ state.all]
 }
 foldp (ReceiveAnswers current) state = noEffects state { current = current }
 foldp (ReceiveCountries (Tuple all current)) state = noEffects state { all = all, current = current }
 foldp (RequestCountries) state = {
-  state: state { correct = 0.0, incorrect = 0.0 },
+  state: state { correct = 0, incorrect = 0 },
   effects: [Just <<< ReceiveCountries <$> fetch]
 }
 
@@ -86,8 +86,8 @@ view state = do
   nav do
     header $ text "Flagship"
     div ! className "total" $ text $ show (length state.all)
-    div ! className "correct" $ text $ show correct
-    div ! className "incorrect" $ text $ show incorrect
+    div ! className "correct" $ text $ show state.correct
+    div ! className "incorrect" $ text $ show state.incorrect
     a #! onClick (const RequestCountries) $ text $ case (length state.all) of
       0 -> "Start"
       _ -> "Restart"
@@ -95,13 +95,11 @@ view state = do
     Just { head }, _ -> do
       img ! (src <<< ("/images/flags/" <> _) <<< _.flag <<< unwrap $ head)
       ul $ for_ state.current $ \name -> li #! onClick (const $ ReceiveAnswer name) $ text name
-    Nothing, 0.0 -> div $ text mempty
-    Nothing, _   -> do
+    Nothing, 0 -> div $ text mempty
+    Nothing, _ -> do
       section ! className "results" $ do
         div ! className "percentage" $ text $ (show percentage) <> "%"
-        div ! className "score" $ text $ "You scored " <> (show correct) <> " out of " <> (show total) <> "."
+        div ! className "score" $ text $ "You scored " <> (show state.correct) <> " out of " <> (show total) <> "."
         a #! onClick (const RequestCountries) $ text "Play Again"
-      where total = maybe 0 id <<< fromNumber $ (state.correct + state.incorrect)
-            correct = maybe 0 id <<< fromNumber $ state.correct
-            incorrect = maybe 0 id <<< fromNumber $ state.incorrect
-            percentage = round $ (state.correct / (state.correct + state.incorrect)) * 100.0
+      where total = state.correct + state.incorrect
+            percentage = round $ toNumber state.correct / (toNumber $ state.correct + state.incorrect) * 100.0
