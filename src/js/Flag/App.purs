@@ -48,7 +48,7 @@ answerCount = 4
 init :: State
 init = { all: [], current: [], correct: 0.0, incorrect: 0.0 }
 
-decode :: ∀ r. { response :: Json | r } -> Either String (Array Country)
+decode :: forall r. { response :: Json | r } -> Either String (Array Country)
 decode request = decodeJson request.response :: Either String Countries
 
 fetch :: forall e. Aff (ajax :: AJAX, random :: RANDOM | e) (Tuple Countries Names)
