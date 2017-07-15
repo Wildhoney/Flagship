@@ -22,7 +22,7 @@ import Text.Smolder.HTML.Attributes (className, src)
 import Text.Smolder.Markup (text, (!), (#!))
 import Prelude hiding (div)
 
-type State = { all :: Countries, current :: Array String, correct :: Number, incorrect :: Number }
+type State = { all :: Countries, current :: Names, correct :: Number, incorrect :: Number }
 type Countries = Array Country
 type Names = Array String
 
@@ -51,7 +51,7 @@ init = { all: [], current: [], correct: 0.0, incorrect: 0.0 }
 decode :: ∀ r. { response :: Json | r } -> Either String (Array Country)
 decode request = decodeJson request.response :: Either String Countries
 
-fetch :: forall e. Aff (ajax :: AJAX, random :: RANDOM | e) (Tuple Countries (Array String))
+fetch :: forall e. Aff (ajax :: AJAX, random :: RANDOM | e) (Tuple Countries Names)
 fetch = get "/countries.json"
   >>= pure <<< decode
   >>= liftEff <<< shuffle <<< either (const []) id
@@ -63,7 +63,7 @@ shuffle xs = do
   pure $ map snd $ sortBy compareFst $ zip randoms xs
   where compareFst (Tuple a _) (Tuple b _) = compare a b
 
-pick :: forall e. Countries -> Eff (random :: RANDOM | e) (Array String)
+pick :: forall e. Countries -> Eff (random :: RANDOM | e) Names
 pick xs = pure <=< shuffle <<< (next <> _) <<< take (answerCount - 1) <=< shuffle $ _.name <<< unwrap <$> xs
   where next = _.name <<< unwrap <$> take 1 xs
 
