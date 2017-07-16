@@ -14,7 +14,7 @@
     "build": "pulp browserify --optimise > public/js/flagship.js && npm run html && npm run sass",
     "postbuild": "ncp src/images public/images && ncp src/server public/server",
     "watch": "pulp --watch browserify --to public/js/flagship.js",
-    "start": "npm run build && echo \"Started server on port 5000...\" && babel-node public/server/default.js",
+    "start": "echo \"Started server on port 5000...\" && babel-node public/server/default.js",
     "postinstall": "bower install"
   },
   "repository": {
