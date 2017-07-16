@@ -23,7 +23,7 @@ import Text.Smolder.HTML.Attributes (className, src)
 import Text.Smolder.Markup (text, (!), (#!))
 import Prelude hiding (div)
 
-type State = { all :: Countries, next :: Countries, current :: Countries, correct :: Int, incorrect :: Int }
+type State = { all :: Countries, remaining :: Countries, answers :: Countries, correct :: Int, incorrect :: Int }
 type Countries = Array Country
 
 data Event = RequestCountries | ReceiveCountries (Tuple Countries Countries) | ReceiveAnswer String | ReceiveAnswers Countries
@@ -47,7 +47,7 @@ answerCount :: Int
 answerCount = 4
 
 init :: State
-init = { all: [], next: [], current: [], correct: 0, incorrect: 0 }
+init = { all: [], remaining: [], answers: [], correct: 0, incorrect: 0 }
 
 decode :: forall r. { response :: Json | r } -> Either String (Array Country)
 decode request = decodeJson request.response :: Either String Countries
@@ -65,19 +65,18 @@ shuffle xs = do
   where compareFst (Tuple a _) (Tuple b _) = compare a b
 
 pick :: forall e. Countries -> Countries -> Eff (random :: RANDOM | e) Countries
-pick all current = pure <=< shuffle <<< (_ <> [next]) <<< take (answerCount - 1) <<<
-                   filter (_ /= next) <=< shuffle $ all
-  where next = maybe (Country { name: "_", flag: "_" }) id $ head current
+pick all answers = shuffle <<< (_ <> [answer]) <<< take (answerCount - 1) <<< filter (_ /= answer) <=< shuffle $ all
+  where answer = maybe (Country { name: "_", flag: "_" }) id $ head answers
 
 foldp :: Event -> State -> EffModel State Event (ajax :: AJAX, random :: RANDOM)
 foldp (ReceiveAnswer name) state = {
-  state: case (_ == name) <<< maybe mempty (_.name <<< unwrap) $ head state.next of
-           true -> state { next = drop 1 state.next, correct = state.correct + 1 }
-           _    -> state { next = drop 1 state.next, incorrect = state.incorrect + 1 },
-  effects: [pure <<< Just <<< ReceiveAnswers <=< liftEff $ pick state.all (drop 1 state.next)]
+  state: case (_ == name) <<< maybe mempty (_.name <<< unwrap) $ head state.remaining of
+           true -> state { remaining = drop 1 state.remaining, correct = state.correct + 1 }
+           _    -> state { remaining = drop 1 state.remaining, incorrect = state.incorrect + 1 },
+  effects: [pure <<< Just <<< ReceiveAnswers <=< liftEff $ pick state.all (drop 1 state.remaining)]
 }
-foldp (ReceiveAnswers current) state = noEffects state { current = current }
-foldp (ReceiveCountries (Tuple all current)) state = noEffects state { all = all, next = all, current = current }
+foldp (ReceiveAnswers answers) state = noEffects state { answers = answers }
+foldp (ReceiveCountries (Tuple all answers)) state = noEffects state { all = all, remaining = all, answers = answers }
 foldp (RequestCountries) state = {
   state: state { correct = 0, incorrect = 0 },
   effects: [Just <<< ReceiveCountries <$> fetch]
@@ -87,16 +86,16 @@ view :: State -> HTML Event
 view state = do
   nav do
     header $ text "Flagship"
-    div ! className "total" $ text $ show (length state.next) <> "/" <> show (length state.all)
+    div ! className "total" $ text $ show (length state.remaining) <> "/" <> show (length state.all)
     div ! className "correct" $ text $ show state.correct
     div ! className "incorrect" $ text $ show state.incorrect
     a #! onClick (const RequestCountries) $ text $ case (length state.all) of
       0 -> "Start"
       _ -> "Restart"
-  section $ case (uncons state.next), (state.correct + state.incorrect) of
+  section $ case (uncons state.remaining), (state.correct + state.incorrect) of
     Just { head }, _ -> do
       img ! (src <<< ("/images/flags/" <> _) <<< _.flag <<< unwrap $ head)
-      ul $ for_ (_.name <<< unwrap <$> state.current) $ \name ->
+      ul $ for_ (_.name <<< unwrap <$> state.answers) $ \name ->
         li ! key name #! onClick (const $ ReceiveAnswer name) $ text name
     Nothing, 0 -> div $ text mempty
     Nothing, _ -> do
