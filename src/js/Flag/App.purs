@@ -5,7 +5,7 @@ import Control.Monad.Eff (Eff)
 import Control.Monad.Eff.Class (liftEff)
 import Control.Monad.Eff.Random (RANDOM, random)
 import Data.Argonaut (class DecodeJson, decodeJson, Json, (.?))
-import Data.Array (drop, head, length, replicate, sortBy, take, uncons, zip)
+import Data.Array (drop, head, length, nub, replicate, sortBy, take, uncons, zip)
 import Data.Either (Either, either)
 import Data.Int (round, toNumber)
 import Data.Maybe (Maybe(..), maybe)
@@ -64,7 +64,7 @@ shuffle xs = do
   where compareFst (Tuple a _) (Tuple b _) = compare a b
 
 pick :: forall e. Countries -> Eff (random :: RANDOM | e) Names
-pick xs = pure <=< shuffle <<< (next <> _) <<< take (answerCount - 1) <=< shuffle $ _.name <<< unwrap <$> xs
+pick xs = pure <=< shuffle <<< nub <<< (next <> _) <<< take (answerCount - 1) <=< shuffle $ _.name <<< unwrap <$> xs
   where next = _.name <<< unwrap <$> take 1 xs
 
 foldp :: Event -> State -> EffModel State Event (ajax :: AJAX, random :: RANDOM)
