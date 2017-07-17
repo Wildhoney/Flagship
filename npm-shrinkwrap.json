@@ -1557,6 +1557,12 @@
       "integrity": "sha1-ojD2T1aDEOFJgAmUB5DsmVRbyn4=",
       "dev": true
     },
+    "cryptr": {
+      "version": "2.0.0",
+      "resolved": "https://registry.npmjs.org/cryptr/-/cryptr-2.0.0.tgz",
+      "integrity": "sha1-rf9gAWL0orHZjE4hhdzdposKCnI=",
+      "dev": true
+    },
     "currently-unhandled": {
       "version": "0.4.1",
       "resolved": "https://registry.npmjs.org/currently-unhandled/-/currently-unhandled-0.4.1.tgz",
@@ -5570,6 +5576,12 @@
       "version": "1.6.1",
       "resolved": "https://registry.npmjs.org/shell-quote/-/shell-quote-1.6.1.tgz",
       "integrity": "sha1-9HgZSczkAmlxJ0MOo7PFR29IF2c=",
+      "dev": true
+    },
+    "shortid": {
+      "version": "2.2.8",
+      "resolved": "https://registry.npmjs.org/shortid/-/shortid-2.2.8.tgz",
+      "integrity": "sha1-AzsRfWoul1gE9vCWnb59PQs1UTE=",
       "dev": true
     },
     "signal-exit": {

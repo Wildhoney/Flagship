@@ -1,6 +1,11 @@
 import { readdirSync } from 'fs';
 import { parse } from 'path';
 import { titleCase } from 'change-case';
+import Cryptr from 'cryptr';
+import { generate } from 'shortid';
+
+const secret = generate();
+export const cryptr = new Cryptr(generate());
 
 /**
  * @constant transformations
@@ -27,8 +32,12 @@ const exceptions = name => {
  */
 const isImage = filename => /svg$/i.test(filename);
 
-export default () => {
+/**
+ * @method fetch
+ * @return {Array}
+ */
+export const fetch = () => {
     return readdirSync(`${__dirname}/../images/flags`).filter(isImage).map(filename => {
-        return { name: exceptions(titleCase(parse(filename).name)), flag: filename };
+        return { name: exceptions(titleCase(parse(filename).name)), flag: `${cryptr.encrypt(filename)}.svg` };
     });
 }
